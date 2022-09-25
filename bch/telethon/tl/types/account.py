@@ -81,10 +81,7 @@ class AuthorizationForm(TLObject):
             _x = reader.tgread_object()
             _users.append(_x)
 
-        if flags & 1:
-            _privacy_policy_url = reader.tgread_string()
-        else:
-            _privacy_policy_url = None
+        _privacy_policy_url = reader.tgread_string() if flags & 1 else None
         return cls(required_types=_required_types, values=_values, errors=_errors, users=_users, selfie_required=_selfie_required, privacy_policy_url=_privacy_policy_url)
 
 
@@ -289,34 +286,13 @@ class PasswordInputSettings(TLObject):
     def from_reader(cls, reader):
         flags = reader.read_int()
 
-        if flags & 1:
-            _new_salt = reader.tgread_bytes()
-        else:
-            _new_salt = None
-        if flags & 1:
-            _new_password_hash = reader.tgread_bytes()
-        else:
-            _new_password_hash = None
-        if flags & 1:
-            _hint = reader.tgread_string()
-        else:
-            _hint = None
-        if flags & 2:
-            _email = reader.tgread_string()
-        else:
-            _email = None
-        if flags & 4:
-            _new_secure_salt = reader.tgread_bytes()
-        else:
-            _new_secure_salt = None
-        if flags & 4:
-            _new_secure_secret = reader.tgread_bytes()
-        else:
-            _new_secure_secret = None
-        if flags & 4:
-            _new_secure_secret_id = reader.read_long()
-        else:
-            _new_secure_secret_id = None
+        _new_salt = reader.tgread_bytes() if flags & 1 else None
+        _new_password_hash = reader.tgread_bytes() if flags & 1 else None
+        _hint = reader.tgread_string() if flags & 1 else None
+        _email = reader.tgread_string() if flags & 2 else None
+        _new_secure_salt = reader.tgread_bytes() if flags & 4 else None
+        _new_secure_secret = reader.tgread_bytes() if flags & 4 else None
+        _new_secure_secret_id = reader.read_long() if flags & 4 else None
         return cls(new_salt=_new_salt, new_password_hash=_new_password_hash, hint=_hint, email=_email, new_secure_salt=_new_secure_salt, new_secure_secret=_new_secure_secret, new_secure_secret_id=_new_secure_secret_id)
 
 

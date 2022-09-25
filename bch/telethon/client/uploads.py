@@ -213,10 +213,7 @@ class UploadMethods(ButtonMethods, MessageParseMethods, UserMethods):
                 self.session.cache_file(fh.md5, fh.size, input_photo)
                 fh = input_photo
 
-            if captions:
-                caption, msg_entities = captions.pop()
-            else:
-                caption, msg_entities = '', None
+            caption, msg_entities = captions.pop() if captions else ('', None)
             media.append(types.InputSingleMedia(
                 types.InputMediaPhoto(fh),
                 message=caption,

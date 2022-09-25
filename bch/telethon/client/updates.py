@@ -237,12 +237,10 @@ class UpdateMethods(UserMethods):
             # just stop even if we're connected. Do so every 30 minutes.
             #
             # TODO Call getDifference instead since it's more relevant
-            if time.time() - self._last_request > 30 * 60:
-                if not await self.is_user_authorized():
-                    # What can be the user doing for so
-                    # long without being logged in...?
-                    continue
-
+            if (
+                time.time() - self._last_request > 30 * 60
+                and await self.is_user_authorized()
+            ):
                 await self(functions.updates.GetStateRequest())
 
     async def _dispatch_queue_updates(self):

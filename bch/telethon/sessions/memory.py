@@ -92,21 +92,19 @@ class MemorySession(Session):
         except TypeError:
             return
 
-        if isinstance(p, (InputPeerUser, InputPeerChannel)):
-            if not p.access_hash:
-                # Some users and channels seem to be returned without
-                # an 'access_hash', meaning Telegram doesn't want you
-                # to access them. This is the reason behind ensuring
-                # that the 'access_hash' is non-zero. See issue #354.
-                # Note that this checks for zero or None, see #392.
-                return
-            else:
-                p_hash = p.access_hash
-        elif isinstance(p, InputPeerChat):
-            p_hash = 0
-        else:
+        if isinstance(p, (InputPeerUser, InputPeerChannel)) and p.access_hash:
+            p_hash = p.access_hash
+        elif isinstance(p, (InputPeerUser, InputPeerChannel)) or not isinstance(
+            p, InputPeerChat
+        ):
+            # Some users and channels seem to be returned without
+            # an 'access_hash', meaning Telegram doesn't want you
+            # to access them. This is the reason behind ensuring
+            # that the 'access_hash' is non-zero. See issue #354.
+            # Note that this checks for zero or None, see #392.
             return
-
+        else:
+            p_hash = 0
         username = getattr(e, 'username', None) or None
         if username is not None:
             username = username.lower()
@@ -129,8 +127,7 @@ class MemorySession(Session):
 
         rows = []  # Rows to add (id, hash, username, phone, name)
         for e in entities:
-            row = self._entity_to_row(e)
-            if row:
+            if row := self._entity_to_row(e):
                 rows.append(row)
         return rows
 
@@ -163,14 +160,13 @@ class MemorySession(Session):
             if exact:
                 return next((id, hash) for found_id, hash, _, _, _
                             in self._entities if found_id == id)
-            else:
-                ids = (
-                    utils.get_peer_id(PeerUser(id)),
-                    utils.get_peer_id(PeerChat(id)),
-                    utils.get_peer_id(PeerChannel(id))
-                )
-                return next((id, hash) for found_id, hash, _, _, _
-                            in self._entities if found_id in ids)
+            ids = (
+                utils.get_peer_id(PeerUser(id)),
+                utils.get_peer_id(PeerChat(id)),
+                utils.get_peer_id(PeerChannel(id))
+            )
+            return next((id, hash) for found_id, hash, _, _, _
+                        in self._entities if found_id in ids)
         except StopIteration:
             pass
 
@@ -192,8 +188,7 @@ class MemorySession(Session):
 
         result = None
         if isinstance(key, str):
-            phone = utils.parse_phone(key)
-            if phone:
+            if phone := utils.parse_phone(key):
                 result = self.get_entity_rows_by_phone(phone)
             else:
                 username, _ = utils.parse_username(key)
@@ -206,22 +201,21 @@ class MemorySession(Session):
         if not result and isinstance(key, str):
             result = self.get_entity_rows_by_name(key)
 
-        if result:
-            entity_id, entity_hash = result  # unpack resulting tuple
-            entity_id, kind = utils.resolve_id(entity_id)
-            # removes the mark and returns type of entity
-            if kind == PeerUser:
-                return InputPeerUser(entity_id, entity_hash)
-            elif kind == PeerChat:
-                return InputPeerChat(entity_id)
-            elif kind == PeerChannel:
-                return InputPeerChannel(entity_id, entity_hash)
-        else:
+        if not result:
             raise ValueError('Could not find input entity with key ', key)
+        entity_id, entity_hash = result  # unpack resulting tuple
+        entity_id, kind = utils.resolve_id(entity_id)
+        # removes the mark and returns type of entity
+        if kind == PeerUser:
+            return InputPeerUser(entity_id, entity_hash)
+        elif kind == PeerChat:
+            return InputPeerChat(entity_id)
+        elif kind == PeerChannel:
+            return InputPeerChannel(entity_id, entity_hash)
 
     def cache_file(self, md5_digest, file_size, instance):
         if not isinstance(instance, (InputDocument, InputPhoto)):
-            raise TypeError('Cannot cache %s instance' % type(instance))
+            raise TypeError(f'Cannot cache {type(instance)} instance')
         key = (md5_digest, file_size, _SentFileType.from_type(instance))
         value = (instance.id, instance.access_hash)
         self._files[key] = value

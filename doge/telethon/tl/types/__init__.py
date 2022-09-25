@@ -444,22 +444,10 @@ class BotInlineMediaResult(TLObject):
 
         _id = reader.tgread_string()
         _type = reader.tgread_string()
-        if flags & 1:
-            _photo = reader.tgread_object()
-        else:
-            _photo = None
-        if flags & 2:
-            _document = reader.tgread_object()
-        else:
-            _document = None
-        if flags & 4:
-            _title = reader.tgread_string()
-        else:
-            _title = None
-        if flags & 8:
-            _description = reader.tgread_string()
-        else:
-            _description = None
+        _photo = reader.tgread_object() if flags & 1 else None
+        _document = reader.tgread_object() if flags & 2 else None
+        _title = reader.tgread_string() if flags & 4 else None
+        _description = reader.tgread_string() if flags & 8 else None
         _send_message = reader.tgread_object()
         return cls(id=_id, type=_type, send_message=_send_message, photo=_photo, document=_document, title=_title, description=_description)
 
@@ -511,10 +499,7 @@ class BotInlineMessageMediaAuto(TLObject):
 
         else:
             _entities = None
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         return cls(message=_message, entities=_entities, reply_markup=_reply_markup)
 
 
@@ -567,10 +552,7 @@ class BotInlineMessageMediaContact(TLObject):
         _first_name = reader.tgread_string()
         _last_name = reader.tgread_string()
         _vcard = reader.tgread_string()
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         return cls(phone_number=_phone_number, first_name=_first_name, last_name=_last_name, vcard=_vcard, reply_markup=_reply_markup)
 
 
@@ -613,10 +595,7 @@ class BotInlineMessageMediaGeo(TLObject):
 
         _geo = reader.tgread_object()
         _period = reader.read_int()
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         return cls(geo=_geo, period=_period, reply_markup=_reply_markup)
 
 
@@ -679,10 +658,7 @@ class BotInlineMessageMediaVenue(TLObject):
         _provider = reader.tgread_string()
         _venue_id = reader.tgread_string()
         _venue_type = reader.tgread_string()
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         return cls(geo=_geo, title=_title, address=_address, provider=_provider, venue_id=_venue_id, venue_type=_venue_type, reply_markup=_reply_markup)
 
 
@@ -737,10 +713,7 @@ class BotInlineMessageText(TLObject):
 
         else:
             _entities = None
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         return cls(message=_message, no_webpage=_no_webpage, entities=_entities, reply_markup=_reply_markup)
 
 
@@ -803,26 +776,11 @@ class BotInlineResult(TLObject):
 
         _id = reader.tgread_string()
         _type = reader.tgread_string()
-        if flags & 2:
-            _title = reader.tgread_string()
-        else:
-            _title = None
-        if flags & 4:
-            _description = reader.tgread_string()
-        else:
-            _description = None
-        if flags & 8:
-            _url = reader.tgread_string()
-        else:
-            _url = None
-        if flags & 16:
-            _thumb = reader.tgread_object()
-        else:
-            _thumb = None
-        if flags & 32:
-            _content = reader.tgread_object()
-        else:
-            _content = None
+        _title = reader.tgread_string() if flags & 2 else None
+        _description = reader.tgread_string() if flags & 4 else None
+        _url = reader.tgread_string() if flags & 8 else None
+        _thumb = reader.tgread_object() if flags & 16 else None
+        _content = reader.tgread_object() if flags & 32 else None
         _send_message = reader.tgread_object()
         return cls(id=_id, type=_type, send_message=_send_message, title=_title, description=_description, url=_url, thumb=_thumb, content=_content)
 
@@ -1008,34 +966,16 @@ class Channel(TLObject):
         _signatures = bool(flags & 2048)
         _min = bool(flags & 4096)
         _id = reader.read_int()
-        if flags & 8192:
-            _access_hash = reader.read_long()
-        else:
-            _access_hash = None
+        _access_hash = reader.read_long() if flags & 8192 else None
         _title = reader.tgread_string()
-        if flags & 64:
-            _username = reader.tgread_string()
-        else:
-            _username = None
+        _username = reader.tgread_string() if flags & 64 else None
         _photo = reader.tgread_object()
         _date = reader.tgread_date()
         _version = reader.read_int()
-        if flags & 512:
-            _restriction_reason = reader.tgread_string()
-        else:
-            _restriction_reason = None
-        if flags & 16384:
-            _admin_rights = reader.tgread_object()
-        else:
-            _admin_rights = None
-        if flags & 32768:
-            _banned_rights = reader.tgread_object()
-        else:
-            _banned_rights = None
-        if flags & 131072:
-            _participants_count = reader.read_int()
-        else:
-            _participants_count = None
+        _restriction_reason = reader.tgread_string() if flags & 512 else None
+        _admin_rights = reader.tgread_object() if flags & 16384 else None
+        _banned_rights = reader.tgread_object() if flags & 32768 else None
+        _participants_count = reader.read_int() if flags & 131072 else None
         return cls(id=_id, title=_title, photo=_photo, date=_date, version=_version, creator=_creator, left=_left, editor=_editor, broadcast=_broadcast, verified=_verified, megagroup=_megagroup, restricted=_restricted, democracy=_democracy, signatures=_signatures, min=_min, access_hash=_access_hash, username=_username, restriction_reason=_restriction_reason, admin_rights=_admin_rights, banned_rights=_banned_rights, participants_count=_participants_count)
 
 
@@ -1851,10 +1791,7 @@ class ChannelForbidden(TLObject):
         _id = reader.read_int()
         _access_hash = reader.read_long()
         _title = reader.tgread_string()
-        if flags & 65536:
-            _until_date = reader.tgread_date()
-        else:
-            _until_date = None
+        _until_date = reader.tgread_date() if flags & 65536 else None
         return cls(id=_id, access_hash=_access_hash, title=_title, broadcast=_broadcast, megagroup=_megagroup, until_date=_until_date)
 
 
@@ -1975,22 +1912,10 @@ class ChannelFull(TLObject):
         _hidden_prehistory = bool(flags & 1024)
         _id = reader.read_int()
         _about = reader.tgread_string()
-        if flags & 1:
-            _participants_count = reader.read_int()
-        else:
-            _participants_count = None
-        if flags & 2:
-            _admins_count = reader.read_int()
-        else:
-            _admins_count = None
-        if flags & 4:
-            _kicked_count = reader.read_int()
-        else:
-            _kicked_count = None
-        if flags & 4:
-            _banned_count = reader.read_int()
-        else:
-            _banned_count = None
+        _participants_count = reader.read_int() if flags & 1 else None
+        _admins_count = reader.read_int() if flags & 2 else None
+        _kicked_count = reader.read_int() if flags & 4 else None
+        _banned_count = reader.read_int() if flags & 4 else None
         _read_inbox_max_id = reader.read_int()
         _read_outbox_max_id = reader.read_int()
         _unread_count = reader.read_int()
@@ -2003,26 +1928,11 @@ class ChannelFull(TLObject):
             _x = reader.tgread_object()
             _bot_info.append(_x)
 
-        if flags & 16:
-            _migrated_from_chat_id = reader.read_int()
-        else:
-            _migrated_from_chat_id = None
-        if flags & 16:
-            _migrated_from_max_id = reader.read_int()
-        else:
-            _migrated_from_max_id = None
-        if flags & 32:
-            _pinned_msg_id = reader.read_int()
-        else:
-            _pinned_msg_id = None
-        if flags & 256:
-            _stickerset = reader.tgread_object()
-        else:
-            _stickerset = None
-        if flags & 512:
-            _available_min_id = reader.read_int()
-        else:
-            _available_min_id = None
+        _migrated_from_chat_id = reader.read_int() if flags & 16 else None
+        _migrated_from_max_id = reader.read_int() if flags & 16 else None
+        _pinned_msg_id = reader.read_int() if flags & 32 else None
+        _stickerset = reader.tgread_object() if flags & 256 else None
+        _available_min_id = reader.read_int() if flags & 512 else None
         return cls(id=_id, about=_about, read_inbox_max_id=_read_inbox_max_id, read_outbox_max_id=_read_outbox_max_id, unread_count=_unread_count, chat_photo=_chat_photo, notify_settings=_notify_settings, exported_invite=_exported_invite, bot_info=_bot_info, can_view_participants=_can_view_participants, can_set_username=_can_set_username, can_set_stickers=_can_set_stickers, hidden_prehistory=_hidden_prehistory, participants_count=_participants_count, admins_count=_admins_count, kicked_count=_kicked_count, banned_count=_banned_count, migrated_from_chat_id=_migrated_from_chat_id, migrated_from_max_id=_migrated_from_max_id, pinned_msg_id=_pinned_msg_id, stickerset=_stickerset, available_min_id=_available_min_id)
 
 
@@ -2531,10 +2441,7 @@ class Chat(TLObject):
         _participants_count = reader.read_int()
         _date = reader.tgread_date()
         _version = reader.read_int()
-        if flags & 64:
-            _migrated_to = reader.tgread_object()
-        else:
-            _migrated_to = None
+        _migrated_to = reader.tgread_object() if flags & 64 else None
         return cls(id=_id, title=_title, photo=_photo, participants_count=_participants_count, date=_date, version=_version, creator=_creator, kicked=_kicked, left=_left, admins_enabled=_admins_enabled, admin=_admin, deactivated=_deactivated, migrated_to=_migrated_to)
 
 
@@ -3003,10 +2910,7 @@ class ChatParticipantsForbidden(TLObject):
         flags = reader.read_int()
 
         _chat_id = reader.read_int()
-        if flags & 1:
-            _self_participant = reader.tgread_object()
-        else:
-            _self_participant = None
+        _self_participant = reader.tgread_object() if flags & 1 else None
         return cls(chat_id=_chat_id, self_participant=_self_participant)
 
 
@@ -3357,47 +3261,23 @@ class Config(TLObject):
         _stickers_recent_limit = reader.read_int()
         _stickers_faved_limit = reader.read_int()
         _channels_read_media_period = reader.read_int()
-        if flags & 1:
-            _tmp_sessions = reader.read_int()
-        else:
-            _tmp_sessions = None
+        _tmp_sessions = reader.read_int() if flags & 1 else None
         _pinned_dialogs_count_max = reader.read_int()
         _call_receive_timeout_ms = reader.read_int()
         _call_ring_timeout_ms = reader.read_int()
         _call_connect_timeout_ms = reader.read_int()
         _call_packet_timeout_ms = reader.read_int()
         _me_url_prefix = reader.tgread_string()
-        if flags & 128:
-            _autoupdate_url_prefix = reader.tgread_string()
-        else:
-            _autoupdate_url_prefix = None
-        if flags & 512:
-            _gif_search_username = reader.tgread_string()
-        else:
-            _gif_search_username = None
-        if flags & 1024:
-            _venue_search_username = reader.tgread_string()
-        else:
-            _venue_search_username = None
-        if flags & 2048:
-            _img_search_username = reader.tgread_string()
-        else:
-            _img_search_username = None
-        if flags & 4096:
-            _static_maps_provider = reader.tgread_string()
-        else:
-            _static_maps_provider = None
+        _autoupdate_url_prefix = reader.tgread_string() if flags & 128 else None
+        _gif_search_username = reader.tgread_string() if flags & 512 else None
+        _venue_search_username = reader.tgread_string() if flags & 1024 else None
+        _img_search_username = reader.tgread_string() if flags & 2048 else None
+        _static_maps_provider = reader.tgread_string() if flags & 4096 else None
         _caption_length_max = reader.read_int()
         _message_length_max = reader.read_int()
         _webfile_dc_id = reader.read_int()
-        if flags & 4:
-            _suggested_lang_code = reader.tgread_string()
-        else:
-            _suggested_lang_code = None
-        if flags & 4:
-            _lang_pack_version = reader.read_int()
-        else:
-            _lang_pack_version = None
+        _suggested_lang_code = reader.tgread_string() if flags & 4 else None
+        _lang_pack_version = reader.read_int() if flags & 4 else None
         return cls(date=_date, expires=_expires, test_mode=_test_mode, this_dc=_this_dc, dc_options=_dc_options, dc_txt_domain_name=_dc_txt_domain_name, chat_size_max=_chat_size_max, megagroup_size_max=_megagroup_size_max, forwarded_count_max=_forwarded_count_max, online_update_period_ms=_online_update_period_ms, offline_blur_timeout_ms=_offline_blur_timeout_ms, offline_idle_timeout_ms=_offline_idle_timeout_ms, online_cloud_timeout_ms=_online_cloud_timeout_ms, notify_cloud_delay_ms=_notify_cloud_delay_ms, notify_default_delay_ms=_notify_default_delay_ms, push_chat_period_ms=_push_chat_period_ms, push_chat_limit=_push_chat_limit, saved_gifs_limit=_saved_gifs_limit, edit_time_limit=_edit_time_limit, revoke_time_limit=_revoke_time_limit, revoke_pm_time_limit=_revoke_pm_time_limit, rating_e_decay=_rating_e_decay, stickers_recent_limit=_stickers_recent_limit, stickers_faved_limit=_stickers_faved_limit, channels_read_media_period=_channels_read_media_period, pinned_dialogs_count_max=_pinned_dialogs_count_max, call_receive_timeout_ms=_call_receive_timeout_ms, call_ring_timeout_ms=_call_ring_timeout_ms, call_connect_timeout_ms=_call_connect_timeout_ms, call_packet_timeout_ms=_call_packet_timeout_ms, me_url_prefix=_me_url_prefix, caption_length_max=_caption_length_max, message_length_max=_message_length_max, webfile_dc_id=_webfile_dc_id, phonecalls_enabled=_phonecalls_enabled, default_p2p_contacts=_default_p2p_contacts, preload_featured_stickers=_preload_featured_stickers, ignore_phone_entities=_ignore_phone_entities, revoke_pm_inbox=_revoke_pm_inbox, blocked_mode=_blocked_mode, tmp_sessions=_tmp_sessions, autoupdate_url_prefix=_autoupdate_url_prefix, gif_search_username=_gif_search_username, venue_search_username=_venue_search_username, img_search_username=_img_search_username, static_maps_provider=_static_maps_provider, suggested_lang_code=_suggested_lang_code, lang_pack_version=_lang_pack_version)
 
 
@@ -3676,10 +3556,7 @@ class DcOption(TLObject):
         _id = reader.read_int()
         _ip_address = reader.tgread_string()
         _port = reader.read_int()
-        if flags & 1024:
-            _secret = reader.tgread_bytes()
-        else:
-            _secret = None
+        _secret = reader.tgread_bytes() if flags & 1024 else None
         return cls(id=_id, ip_address=_ip_address, port=_port, ipv6=_ipv6, media_only=_media_only, tcpo_only=_tcpo_only, cdn=_cdn, static=_static, secret=_secret)
 
 
@@ -3939,14 +3816,8 @@ class Dialog(TLObject):
         _unread_count = reader.read_int()
         _unread_mentions_count = reader.read_int()
         _notify_settings = reader.tgread_object()
-        if flags & 1:
-            _pts = reader.read_int()
-        else:
-            _pts = None
-        if flags & 2:
-            _draft = reader.tgread_object()
-        else:
-            _draft = None
+        _pts = reader.read_int() if flags & 1 else None
+        _draft = reader.tgread_object() if flags & 2 else None
         return cls(peer=_peer, top_message=_top_message, read_inbox_max_id=_read_inbox_max_id, read_outbox_max_id=_read_outbox_max_id, unread_count=_unread_count, unread_mentions_count=_unread_mentions_count, notify_settings=_notify_settings, pinned=_pinned, unread_mark=_unread_mark, pts=_pts, draft=_draft)
 
 
@@ -4120,18 +3991,9 @@ class DocumentAttributeAudio(TLObject):
 
         _voice = bool(flags & 1024)
         _duration = reader.read_int()
-        if flags & 1:
-            _title = reader.tgread_string()
-        else:
-            _title = None
-        if flags & 2:
-            _performer = reader.tgread_string()
-        else:
-            _performer = None
-        if flags & 4:
-            _waveform = reader.tgread_bytes()
-        else:
-            _waveform = None
+        _title = reader.tgread_string() if flags & 1 else None
+        _performer = reader.tgread_string() if flags & 2 else None
+        _waveform = reader.tgread_bytes() if flags & 4 else None
         return cls(duration=_duration, voice=_voice, title=_title, performer=_performer, waveform=_waveform)
 
 
@@ -4262,10 +4124,7 @@ class DocumentAttributeSticker(TLObject):
         _mask = bool(flags & 2)
         _alt = reader.tgread_string()
         _stickerset = reader.tgread_object()
-        if flags & 1:
-            _mask_coords = reader.tgread_object()
-        else:
-            _mask_coords = None
+        _mask_coords = reader.tgread_object() if flags & 1 else None
         return cls(alt=_alt, stickerset=_stickerset, mask=_mask, mask_coords=_mask_coords)
 
 
@@ -4395,10 +4254,7 @@ class DraftMessage(TLObject):
         flags = reader.read_int()
 
         _no_webpage = bool(flags & 2)
-        if flags & 1:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _reply_to_msg_id = reader.read_int() if flags & 1 else None
         _message = reader.tgread_string()
         if flags & 8:
             reader.read_int()
@@ -4442,10 +4298,7 @@ class DraftMessageEmpty(TLObject):
     def from_reader(cls, reader):
         flags = reader.read_int()
 
-        if flags & 1:
-            _date = reader.tgread_date()
-        else:
-            _date = None
+        _date = reader.tgread_date() if flags & 1 else None
         return cls(date=_date)
 
 
@@ -5291,10 +5144,7 @@ class Game(TLObject):
         _title = reader.tgread_string()
         _description = reader.tgread_string()
         _photo = reader.tgread_object()
-        if flags & 1:
-            _document = reader.tgread_object()
-        else:
-            _document = None
+        _document = reader.tgread_object() if flags & 1 else None
         return cls(id=_id, access_hash=_access_hash, short_name=_short_name, title=_title, description=_description, photo=_photo, document=_document)
 
 

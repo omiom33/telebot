@@ -150,9 +150,12 @@ class BadMessageError(Exception):
     }
 
     def __init__(self, code):
-        super().__init__(self.ErrorMessages.get(
-            code,
-            'Unknown error code (this should not happen): {}.'.format(code)))
+        super().__init__(
+            self.ErrorMessages.get(
+                code, f'Unknown error code (this should not happen): {code}.'
+            )
+        )
+
 
         self.code = code
 

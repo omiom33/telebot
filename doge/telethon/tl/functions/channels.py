@@ -587,10 +587,7 @@ class GetAdminLogRequest(TLRequest):
 
         _channel = reader.tgread_object()
         _q = reader.tgread_string()
-        if flags & 1:
-            _events_filter = reader.tgread_object()
-        else:
-            _events_filter = None
+        _events_filter = reader.tgread_object() if flags & 1 else None
         if flags & 2:
             reader.read_int()
             _admins = []
@@ -746,10 +743,7 @@ class GetMessagesRequest(TLRequest):
 
     async def resolve(self, client, utils):
         self.channel = utils.get_input_channel(await client.get_input_entity(self.channel))
-        _tmp = []
-        for _x in self.id:
-            _tmp.append(utils.get_input_message(_x))
-
+        _tmp = [utils.get_input_message(_x) for _x in self.id]
         self.id = _tmp
 
     def to_dict(self):

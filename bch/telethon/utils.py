@@ -64,7 +64,7 @@ def get_display_name(entity):
     """
     if isinstance(entity, types.User):
         if entity.last_name and entity.first_name:
-            return '{} {}'.format(entity.first_name, entity.last_name)
+            return f'{entity.first_name} {entity.last_name}'
         elif entity.first_name:
             return entity.first_name
         elif entity.last_name:
@@ -100,8 +100,9 @@ def get_extension(media):
 
 
 def _raise_cast_fail(entity, target):
-    raise TypeError('Cannot cast {} to any kind of {}.'.format(
-        type(entity).__name__, target))
+    raise TypeError(
+        f'Cannot cast {type(entity).__name__} to any kind of {target}.'
+    )
 
 
 def get_input_peer(entity, allow_self=True):
@@ -413,7 +414,7 @@ def get_message_id(message):
     except AttributeError:
         pass
 
-    raise TypeError('Invalid message type: {}'.format(type(message)))
+    raise TypeError(f'Invalid message type: {type(message)}')
 
 
 def get_attributes(file, *, attributes=None, mime_type=None,
@@ -515,9 +516,9 @@ def sanitize_parse_mode(mode):
                 'html': html
             }[mode.lower()]
         except KeyError:
-            raise ValueError('Unknown parse mode {}'.format(mode))
+            raise ValueError(f'Unknown parse mode {mode}')
     else:
-        raise TypeError('Invalid parse mode type {}'.format(mode))
+        raise TypeError(f'Invalid parse mode type {mode}')
 
 
 def get_input_location(location):
@@ -590,13 +591,13 @@ def is_gif(file):
 
 def is_audio(file):
     """Returns ``True`` if the file extension looks like an audio file."""
-    file = 'a' + _get_extension(file)
+    file = f'a{_get_extension(file)}'
     return (mimetypes.guess_type(file)[0] or '').startswith('audio/')
 
 
 def is_video(file):
     """Returns ``True`` if the file extension looks like a video file."""
-    file = 'a' + _get_extension(file)
+    file = f'a{_get_extension(file)}'
     return (mimetypes.guess_type(file)[0] or '').startswith('video/')
 
 
@@ -616,10 +617,9 @@ def parse_phone(phone):
     """Parses the given phone, or returns ``None`` if it's invalid."""
     if isinstance(phone, int):
         return str(phone)
-    else:
-        phone = re.sub(r'[+()\s-]', '', str(phone))
-        if phone.isdigit():
-            return phone
+    phone = re.sub(r'[+()\s-]', '', str(phone))
+    if phone.isdigit():
+        return phone
 
 
 def parse_username(username):
@@ -631,8 +631,7 @@ def parse_username(username):
        Returns ``None`` if the ``username`` is not valid.
     """
     username = username.strip()
-    m = USERNAME_RE.match(username)
-    if m:
+    if m := USERNAME_RE.match(username):
         username = username[m.end():]
         is_invite = bool(m.group(1))
         if is_invite:
@@ -701,13 +700,7 @@ def get_peer_id(peer, add_mark=True):
         return -peer.chat_id if add_mark else peer.chat_id
     elif isinstance(peer, (
             types.PeerChannel, types.InputPeerChannel, types.ChannelFull)):
-        if isinstance(peer, types.ChannelFull):
-            # Special case: .get_input_peer can't return InputChannel from
-            # ChannelFull since it doesn't have an .access_hash attribute.
-            i = peer.id
-        else:
-            i = peer.channel_id
-
+        i = peer.id if isinstance(peer, types.ChannelFull) else peer.channel_id
         # Check in case the user mixed things up to avoid blowing up
         if not (0 < i <= 0x7fffffff):
             i = resolve_id(i)[0]
@@ -716,13 +709,7 @@ def get_peer_id(peer, add_mark=True):
             else:
                 peer.channel_id = i
 
-        if add_mark:
-            # Concat -100 through math tricks, .to_supergroup() on
-            # Madeline IDs will be strictly positive -> log works.
-            return -(i + pow(10, math.floor(math.log10(i) + 3)))
-        else:
-            return i
-
+        return -(i + pow(10, math.floor(math.log10(i) + 3))) if add_mark else i
     _raise_cast_fail(peer, 'int')
 
 
@@ -731,13 +718,8 @@ def resolve_id(marked_id):
     if marked_id >= 0:
         return marked_id, types.PeerUser
 
-    # There have been report of chat IDs being 10000xyz, which means their
-    # marked version is -10000xyz, which in turn looks like a channel but
-    # it becomes 00xyz (= xyz). Hence, we must assert that there are only
-    # two zeroes.
-    m = re.match(r'-100([^0]\d*)', str(marked_id))
-    if m:
-        return int(m.group(1)), types.PeerChannel
+    if m := re.match(r'-100([^0]\d*)', str(marked_id)):
+        return int(m[1]), types.PeerChannel
 
     return -marked_id, types.PeerChat
 

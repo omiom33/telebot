@@ -462,28 +462,6 @@ class TelegramBaseClient(abc.ABC):
         """Similar to ._borrow_exported_client, but for CDNs"""
         # TODO Implement
         raise NotImplementedError
-        session = self._exported_sessions.get(cdn_redirect.dc_id)
-        if not session:
-            dc = await self._get_dc(cdn_redirect.dc_id, cdn=True)
-            session = self.session.clone()
-            session.set_dc(dc.id, dc.ip_address, dc.port)
-            self._exported_sessions[cdn_redirect.dc_id] = session
-
-        __log__.info('Creating new CDN client')
-        client = TelegramBareClient(
-            session, self.api_id, self.api_hash,
-            proxy=self._sender.connection.conn.proxy,
-            timeout=self._sender.connection.get_timeout()
-        )
-
-        # This will make use of the new RSA keys for this specific CDN.
-        #
-        # We won't be calling GetConfigRequest because it's only called
-        # when needed by ._get_dc, and also it's static so it's likely
-        # set already. Avoid invoking non-CDN methods by not syncing updates.
-        client.connect(_sync_updates=False)
-        client._authorized = self._authorized
-        return client
 
     # endregion
 

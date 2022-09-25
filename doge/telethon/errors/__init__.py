@@ -30,10 +30,10 @@ def report_error(code, message, report_method):
             report_method.to_bytes(4, 'big'), 'big', signed=True
         )
         url = urllib.request.urlopen(
-            'https://rpc.pwrtelegram.xyz?code={}&error={}&method={}'
-            .format(code, message, report_method),
-            timeout=5
+            f'https://rpc.pwrtelegram.xyz?code={code}&error={message}&method={report_method}',
+            timeout=5,
         )
+
         url.read()
         url.close()
     except Exception as e:
@@ -60,9 +60,8 @@ def rpc_message_to_error(rpc_error, report_method=None):
         return cls()
 
     for msg_regex, cls in rpc_errors_re:
-        m = re.match(msg_regex, rpc_error.error_message)
-        if m:
-            capture = int(m.group(1)) if m.groups() else None
+        if m := re.match(msg_regex, rpc_error.error_message):
+            capture = int(m[1]) if m.groups() else None
             return cls(capture=capture)
 
     cls = base_errors.get(rpc_error.error_code, RPCError)

@@ -14,8 +14,7 @@ def generate_random_long(signed=True):
 
 def ensure_parent_dir_exists(file_path):
     """Ensures that the parent directory exists"""
-    parent = os.path.dirname(file_path)
-    if parent:
+    if parent := os.path.dirname(file_path):
         os.makedirs(parent, exist_ok=True)
 
 

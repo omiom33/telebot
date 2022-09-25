@@ -637,10 +637,7 @@ class InitTakeoutSessionRequest(TLRequest):
         _message_megagroups = bool(flags & 8)
         _message_channels = bool(flags & 16)
         _files = bool(flags & 32)
-        if flags & 32:
-            _file_max_size = reader.read_int()
-        else:
-            _file_max_size = None
+        _file_max_size = reader.read_int() if flags & 32 else None
         return cls(contacts=_contacts, message_users=_message_users, message_chats=_message_chats, message_megagroups=_message_megagroups, message_channels=_message_channels, files=_files, file_max_size=_file_max_size)
 
 
@@ -909,10 +906,7 @@ class SendChangePhoneCodeRequest(TLRequest):
 
         _allow_flashcall = bool(flags & 1)
         _phone_number = reader.tgread_string()
-        if flags & 1:
-            _current_number = reader.tgread_bool()
-        else:
-            _current_number = None
+        _current_number = reader.tgread_bool() if flags & 1 else None
         return cls(phone_number=_phone_number, allow_flashcall=_allow_flashcall, current_number=_current_number)
 
 
@@ -955,10 +949,7 @@ class SendConfirmPhoneCodeRequest(TLRequest):
 
         _allow_flashcall = bool(flags & 1)
         _hash = reader.tgread_string()
-        if flags & 1:
-            _current_number = reader.tgread_bool()
-        else:
-            _current_number = None
+        _current_number = reader.tgread_bool() if flags & 1 else None
         return cls(hash=_hash, allow_flashcall=_allow_flashcall, current_number=_current_number)
 
 
@@ -1031,10 +1022,7 @@ class SendVerifyPhoneCodeRequest(TLRequest):
 
         _allow_flashcall = bool(flags & 1)
         _phone_number = reader.tgread_string()
-        if flags & 1:
-            _current_number = reader.tgread_bool()
-        else:
-            _current_number = None
+        _current_number = reader.tgread_bool() if flags & 1 else None
         return cls(phone_number=_phone_number, allow_flashcall=_allow_flashcall, current_number=_current_number)
 
 
@@ -1293,18 +1281,9 @@ class UpdateProfileRequest(TLRequest):
     def from_reader(cls, reader):
         flags = reader.read_int()
 
-        if flags & 1:
-            _first_name = reader.tgread_string()
-        else:
-            _first_name = None
-        if flags & 2:
-            _last_name = reader.tgread_string()
-        else:
-            _last_name = None
-        if flags & 4:
-            _about = reader.tgread_string()
-        else:
-            _about = None
+        _first_name = reader.tgread_string() if flags & 1 else None
+        _last_name = reader.tgread_string() if flags & 2 else None
+        _about = reader.tgread_string() if flags & 4 else None
         return cls(first_name=_first_name, last_name=_last_name, about=_about)
 
 

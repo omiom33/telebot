@@ -172,11 +172,7 @@ class InlineBuilder:
                 See "Type of the result" in https://core.telegram.org/bots/api.
         """
         if type is None:
-            if voice_note:
-                type = 'voice'
-            else:
-                type = 'document'
-
+            type = 'voice' if voice_note else 'document'
         use_cache = types.InputDocument if use_cache else None
         fh = self._client.upload_file(file, use_cache=use_cache)
         if not isinstance(fh, types.InputDocument):

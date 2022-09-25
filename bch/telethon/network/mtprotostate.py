@@ -104,7 +104,7 @@ class MTProtoState:
             if body == b'l\xfe\xff\xff':
                 raise BrokenAuthKeyError()
             else:
-                raise BufferError("Can't decode packet ({})".format(body))
+                raise BufferError(f"Can't decode packet ({body})")
 
         key_id = struct.unpack('<Q', body[:8])[0]
         if key_id != self.auth_key.key_id:
@@ -168,9 +168,8 @@ class MTProtoState:
         Generates the next sequence number depending on whether
         it should be for a content-related query or not.
         """
-        if content_related:
-            result = self._sequence * 2 + 1
-            self._sequence += 1
-            return result
-        else:
+        if not content_related:
             return self._sequence * 2
+        result = self._sequence * 2 + 1
+        self._sequence += 1
+        return result

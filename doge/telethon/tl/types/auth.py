@@ -43,10 +43,7 @@ class Authorization(TLObject):
     def from_reader(cls, reader):
         flags = reader.read_int()
 
-        if flags & 1:
-            _tmp_sessions = reader.read_int()
-        else:
-            _tmp_sessions = None
+        _tmp_sessions = reader.read_int() if flags & 1 else None
         _user = reader.tgread_object()
         return cls(user=_user, tmp_sessions=_tmp_sessions)
 
@@ -254,18 +251,9 @@ class SentCode(TLObject):
         _phone_registered = bool(flags & 1)
         _type = reader.tgread_object()
         _phone_code_hash = reader.tgread_string()
-        if flags & 2:
-            _next_type = reader.tgread_object()
-        else:
-            _next_type = None
-        if flags & 4:
-            _timeout = reader.read_int()
-        else:
-            _timeout = None
-        if flags & 8:
-            _terms_of_service = reader.tgread_object()
-        else:
-            _terms_of_service = None
+        _next_type = reader.tgread_object() if flags & 2 else None
+        _timeout = reader.read_int() if flags & 4 else None
+        _terms_of_service = reader.tgread_object() if flags & 8 else None
         return cls(type=_type, phone_code_hash=_phone_code_hash, phone_registered=_phone_registered, next_type=_next_type, timeout=_timeout, terms_of_service=_terms_of_service)
 
 

@@ -140,14 +140,16 @@ class MTProtoSender:
         await self._disconnect()
 
     async def _disconnect(self, error=None):
-        __log__.info('Disconnecting from {}...'.format(self._ip))
+        __log__.info(f'Disconnecting from {self._ip}...')
         self._user_connected = False
         try:
             __log__.debug('Closing current connection...')
             await self._connection.close()
         finally:
-            __log__.debug('Cancelling {} pending message(s)...'
-                          .format(len(self._pending_messages)))
+            __log__.debug(
+                f'Cancelling {len(self._pending_messages)} pending message(s)...'
+            )
+
             for message in self._pending_messages.values():
                 if error and not message.future.done():
                     message.future.set_exception(error)
@@ -166,7 +168,7 @@ class MTProtoSender:
                 __log__.debug('Cancelling the receive loop...')
                 self._recv_loop_handle.cancel()
 
-        __log__.info('Disconnection from {} complete!'.format(self._ip))
+        __log__.info(f'Disconnection from {self._ip} complete!')
         if self._disconnected:
             if error:
                 self._disconnected.set_exception(error)
@@ -236,39 +238,38 @@ class MTProtoSender:
         authorization key if necessary, and starting the send and
         receive loops.
         """
-        __log__.info('Connecting to {}:{}...'.format(self._ip, self._port))
+        __log__.info(f'Connecting to {self._ip}:{self._port}...')
         for retry in range(1, self._retries + 1):
             try:
-                __log__.debug('Connection attempt {}...'.format(retry))
+                __log__.debug(f'Connection attempt {retry}...')
                 await self._connection.connect(self._ip, self._port)
             except (asyncio.TimeoutError, OSError) as e:
-                __log__.warning('Attempt {} at connecting failed: {}: {}'
-                                .format(retry, type(e).__name__, e))
+                __log__.warning(
+                    f'Attempt {retry} at connecting failed: {type(e).__name__}: {e}'
+                )
+
             else:
                 break
         else:
-            raise ConnectionError('Connection to Telegram failed {} times'
-                                  .format(self._retries))
+            raise ConnectionError(f'Connection to Telegram failed {self._retries} times')
 
         __log__.debug('Connection success!')
         if self.state.auth_key is None:
             plain = MTProtoPlainSender(self._connection)
             for retry in range(1, self._retries + 1):
                 try:
-                    __log__.debug('New auth_key attempt {}...'.format(retry))
+                    __log__.debug(f'New auth_key attempt {retry}...')
                     self.state.auth_key, self.state.time_offset =\
-                        await authenticator.do_authentication(plain)
+                            await authenticator.do_authentication(plain)
 
                     if self._auth_key_callback:
                         self._auth_key_callback(self.state.auth_key)
 
                     break
                 except (SecurityError, AssertionError) as e:
-                    __log__.warning('Attempt {} at new auth_key failed: {}'
-                                    .format(retry, e))
+                    __log__.warning(f'Attempt {retry} at new auth_key failed: {e}')
             else:
-                e = ConnectionError('auth_key generation failed {} times'
-                                    .format(self._retries))
+                e = ConnectionError(f'auth_key generation failed {self._retries} times')
                 await self._disconnect(error=e)
                 raise e
 
@@ -281,7 +282,7 @@ class MTProtoSender:
         # First connection or manual reconnection after a failure
         if self._disconnected is None or self._disconnected.done():
             self._disconnected = asyncio.Future()
-        __log__.info('Connection to {} complete!'.format(self._ip))
+        __log__.info(f'Connection to {self._ip} complete!')
 
     async def _reconnect(self):
         """
@@ -380,7 +381,7 @@ class MTProtoSender:
 
             while not any(m.future.cancelled() for m in messages):
                 try:
-                    __log__.debug('Sending {} bytes...'.format(len(body)))
+                    __log__.debug(f'Sending {len(body)} bytes...')
                     await self._connection.send(body)
                     break
                 except asyncio.TimeoutError:
@@ -409,8 +410,9 @@ class MTProtoSender:
                     else:
                         self._send_queue.put_nowait(m)
 
-            __log__.debug('Outgoing messages {} sent!'
-                          .format(', '.join(str(m.msg_id) for m in messages)))
+            __log__.debug(
+                f"Outgoing messages {', '.join(str(m.msg_id) for m in messages)} sent!"
+            )
 
     async def _recv_loop(self):
         """
@@ -454,15 +456,14 @@ class MTProtoSender:
                 #
                 # TODO Is it possible to detect malformed messages vs
                 # an actually broken authkey?
-                __log__.warning('Broken authorization key?: {}'.format(e))
+                __log__.warning(f'Broken authorization key?: {e}')
                 self.state.auth_key = None
                 self._start_reconnect()
                 break
             except SecurityError as e:
                 # A step while decoding had the incorrect data. This message
                 # should not be considered safe and it should be ignored.
-                __log__.warning('Security error while unpacking a '
-                                'received message: {}'.format(e))
+                __log__.warning(f'Security error while unpacking a received message: {e}')
                 continue
             except TypeNotFoundError as e:
                 # The payload inside the message was not a known TLObject.
@@ -534,8 +535,7 @@ class MTProtoSender:
             return
         else:
             # TODO We should not get responses to things we never sent
-            __log__.info('Received response without parent request: {}'
-                         .format(rpc_result.body))
+            __log__.info(f'Received response without parent request: {rpc_result.body}')
 
     async def _handle_container(self, message):
         """
@@ -559,8 +559,7 @@ class MTProtoSender:
             await self._process_message(message)
 
     async def _handle_update(self, message):
-        __log__.debug('Handling update {}'
-                      .format(message.obj.__class__.__name__))
+        __log__.debug(f'Handling update {message.obj.__class__.__name__}')
         if self._update_callback:
             self._update_callback(message.obj)
 
@@ -573,8 +572,7 @@ class MTProtoSender:
         """
         pong = message.obj
         __log__.debug('Handling pong for message %d', pong.msg_id)
-        message = self._pending_messages.pop(pong.msg_id, None)
-        if message:
+        if message := self._pending_messages.pop(pong.msg_id, None):
             message.future.set_result(pong)
 
     async def _handle_bad_server_salt(self, message):
@@ -720,8 +718,7 @@ class MTProtoSender:
         # TODO save these salts and automatically adjust to the
         # correct one whenever the salt in use expires.
         __log__.debug('Handling future salts for message %d', message.msg_id)
-        msg = self._pending_messages.pop(message.msg_id, None)
-        if msg:
+        if msg := self._pending_messages.pop(message.msg_id, None):
             msg.future.set_result(message.obj)
 
     async def _handle_state_forgotten(self, message):

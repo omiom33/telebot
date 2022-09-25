@@ -79,33 +79,15 @@ class Message(custom.message.Message):
         _silent = bool(flags & 8192)
         _post = bool(flags & 16384)
         _id = reader.read_int()
-        if flags & 256:
-            _from_id = reader.read_int()
-        else:
-            _from_id = None
+        _from_id = reader.read_int() if flags & 256 else None
         _to_id = reader.tgread_object()
-        if flags & 4:
-            _fwd_from = reader.tgread_object()
-        else:
-            _fwd_from = None
-        if flags & 2048:
-            _via_bot_id = reader.read_int()
-        else:
-            _via_bot_id = None
-        if flags & 8:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _fwd_from = reader.tgread_object() if flags & 4 else None
+        _via_bot_id = reader.read_int() if flags & 2048 else None
+        _reply_to_msg_id = reader.read_int() if flags & 8 else None
         _date = reader.tgread_date()
         _message = reader.tgread_string()
-        if flags & 512:
-            _media = reader.tgread_object()
-        else:
-            _media = None
-        if flags & 64:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _media = reader.tgread_object() if flags & 512 else None
+        _reply_markup = reader.tgread_object() if flags & 64 else None
         if flags & 128:
             reader.read_int()
             _entities = []
@@ -115,22 +97,10 @@ class Message(custom.message.Message):
 
         else:
             _entities = None
-        if flags & 1024:
-            _views = reader.read_int()
-        else:
-            _views = None
-        if flags & 32768:
-            _edit_date = reader.tgread_date()
-        else:
-            _edit_date = None
-        if flags & 65536:
-            _post_author = reader.tgread_string()
-        else:
-            _post_author = None
-        if flags & 131072:
-            _grouped_id = reader.read_long()
-        else:
-            _grouped_id = None
+        _views = reader.read_int() if flags & 1024 else None
+        _edit_date = reader.tgread_date() if flags & 32768 else None
+        _post_author = reader.tgread_string() if flags & 65536 else None
+        _grouped_id = reader.read_long() if flags & 131072 else None
         return cls(id=_id, to_id=_to_id, date=_date, message=_message, out=_out, mentioned=_mentioned, media_unread=_media_unread, silent=_silent, post=_post, from_id=_from_id, fwd_from=_fwd_from, via_bot_id=_via_bot_id, reply_to_msg_id=_reply_to_msg_id, media=_media, reply_markup=_reply_markup, entities=_entities, views=_views, edit_date=_edit_date, post_author=_post_author, grouped_id=_grouped_id)
 
 types.Message = Message
@@ -174,15 +144,9 @@ class MessageService(custom.message.Message):
         _silent = bool(flags & 8192)
         _post = bool(flags & 16384)
         _id = reader.read_int()
-        if flags & 256:
-            _from_id = reader.read_int()
-        else:
-            _from_id = None
+        _from_id = reader.read_int() if flags & 256 else None
         _to_id = reader.tgread_object()
-        if flags & 8:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _reply_to_msg_id = reader.read_int() if flags & 8 else None
         _date = reader.tgread_date()
         _action = reader.tgread_object()
         return cls(id=_id, to_id=_to_id, date=_date, action=_action, out=_out, mentioned=_mentioned, media_unread=_media_unread, silent=_silent, post=_post, from_id=_from_id, reply_to_msg_id=_reply_to_msg_id)

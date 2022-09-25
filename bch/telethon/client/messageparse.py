@@ -73,9 +73,8 @@ class MessageParseMethods(UserMethods):
         message, msg_entities = parse_mode.parse(message)
         for i, e in enumerate(msg_entities):
             if isinstance(e, types.MessageEntityTextUrl):
-                m = re.match(r'^@|\+|tg://user\?id=(\d+)', e.url)
-                if m:
-                    user = int(m.group(1)) if m.group(1) else e.url
+                if m := re.match(r'^@|\+|tg://user\?id=(\d+)', e.url):
+                    user = int(m[1]) if m[1] else e.url
                     await self._replace_with_mention(msg_entities, i, user)
             elif isinstance(e, (types.MessageEntityMentionName,
                                 types.InputMessageEntityMentionName)):
@@ -93,12 +92,15 @@ class MessageParseMethods(UserMethods):
         if isinstance(request, int):
             msg_id = request
         else:
-            msg_id = None
-            for update in result.updates:
-                if isinstance(update, types.UpdateMessageID):
-                    if update.random_id == request.random_id:
-                        msg_id = update.id
-                        break
+            msg_id = next(
+                (
+                    update.id
+                    for update in result.updates
+                    if isinstance(update, types.UpdateMessageID)
+                    and update.random_id == request.random_id
+                ),
+                None,
+            )
 
         if isinstance(result, types.UpdateShort):
             updates = [result.update]

@@ -69,7 +69,7 @@ class ChatMethods(UserMethods):
 
             def filter_entity(ent):
                 return search in utils.get_display_name(ent).lower() or\
-                       search in (getattr(ent, 'username', '') or None).lower()
+                           search in (getattr(ent, 'username', '') or None).lower()
         else:
             def filter_entity(ent):
                 return True
@@ -158,10 +158,9 @@ class ChatMethods(UserMethods):
                 have += 1
                 if have > limit:
                     break
-                else:
-                    user = users[participant.user_id]
-                    user.participant = participant
-                    await yield_(user)
+                user = users[participant.user_id]
+                user.participant = participant
+                await yield_(user)
         else:
             if _total:
                 _total[0] = 1
