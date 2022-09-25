@@ -50,14 +50,18 @@ class DownloadMethods(UserMethods):
             if not hasattr(entity, 'photo'):
                 # Special case: may be a ChatFull with photo:Photo
                 # This is different from a normal UserProfilePhoto and Chat
-                if not hasattr(entity, 'chat_photo'):
-                    return None
+                return (
+                    await self._download_photo(
+                        entity.chat_photo, file, date=None, progress_callback=None
+                    )
+                    if hasattr(entity, 'chat_photo')
+                    else None
+                )
 
-                return await self._download_photo(
-                    entity.chat_photo, file, date=None, progress_callback=None)
-
-            for attr in ('username', 'first_name', 'title'):
-                possible_names.append(getattr(entity, attr, None))
+            possible_names.extend(
+                getattr(entity, attr, None)
+                for attr in ('username', 'first_name', 'title')
+            )
 
             photo = entity.photo
 
@@ -81,15 +85,14 @@ class DownloadMethods(UserMethods):
             # See issue #500, Android app fails as of v4.6.0 (1155).
             # The fix seems to be using the full channel chat photo.
             ie = await self.get_input_entity(entity)
-            if isinstance(ie, types.InputPeerChannel):
-                full = await self(functions.channels.GetFullChannelRequest(ie))
-                return await self._download_photo(
-                    full.full_chat.chat_photo, file,
-                    date=None, progress_callback=None
-                )
-            else:
+            if not isinstance(ie, types.InputPeerChannel):
                 # Until there's a report for chats, no need to.
                 return None
+            full = await self(functions.channels.GetFullChannelRequest(ie))
+            return await self._download_photo(
+                full.full_chat.chat_photo, file,
+                date=None, progress_callback=None
+            )
 
     async def download_media(self, message, file=None,
                              *, progress_callback=None):
@@ -123,9 +126,10 @@ class DownloadMethods(UserMethods):
             date = datetime.datetime.now()
             media = message
 
-        if isinstance(media, types.MessageMediaWebPage):
-            if isinstance(media.webpage, types.WebPage):
-                media = media.webpage.document or media.webpage.photo
+        if isinstance(media, types.MessageMediaWebPage) and isinstance(
+            media.webpage, types.WebPage
+        ):
+            media = media.webpage.document or media.webpage.photo
 
         if isinstance(media, (types.MessageMediaPhoto, types.Photo,
                               types.PhotoSize, types.PhotoCachedSize)):
@@ -174,11 +178,7 @@ class DownloadMethods(UserMethods):
                 ``total`` is the provided ``file_size``.
         """
         if not part_size_kb:
-            if not file_size:
-                part_size_kb = 64  # Reasonable default
-            else:
-                part_size_kb = utils.get_appropriated_part_size(file_size)
-
+            part_size_kb = utils.get_appropriated_part_size(file_size) if file_size else 64
         part_size = int(part_size_kb * 1024)
         # https://core.telegram.org/api/files says:
         # > part_size % 1024 = 0 (divisible by 1KB)
@@ -241,12 +241,11 @@ class DownloadMethods(UserMethods):
 
                 offset += part_size
                 if not result.bytes:
-                    if in_memory:
-                        f.flush()
-                        return f.getvalue()
-                    else:
+                    if not in_memory:
                         return getattr(result, 'type', '')
 
+                    f.flush()
+                    return f.getvalue()
                 __log__.debug('Saving %d more bytes', len(result.bytes))
                 f.write(result.bytes)
                 if progress_callback:
@@ -317,9 +316,7 @@ class DownloadMethods(UserMethods):
             elif isinstance(attr, types.DocumentAttributeAudio):
                 kind = 'audio'
                 if attr.performer and attr.title:
-                    possible_names.append('{} - {}'.format(
-                        attr.performer, attr.title
-                    ))
+                    possible_names.append(f'{attr.performer} - {attr.title}')
                 elif attr.performer:
                     possible_names.append(attr.performer)
                 elif attr.title:
@@ -362,9 +359,9 @@ class DownloadMethods(UserMethods):
             last_name = (last_name or '').replace(';', '')
             f.write('BEGIN:VCARD\n')
             f.write('VERSION:4.0\n')
-            f.write('N:{};{};;;\n'.format(first_name, last_name))
-            f.write('FN:{} {}\n'.format(first_name, last_name))
-            f.write('TEL;TYPE=cell;VALUE=uri:tel:+{}\n'.format(phone_number))
+            f.write(f'N:{first_name};{last_name};;;\n')
+            f.write(f'FN:{first_name} {last_name}\n')
+            f.write(f'TEL;TYPE=cell;VALUE=uri:tel:+{phone_number}\n')
             f.write('END:VCARD\n')
         finally:
             # Only close the stream if we opened it
@@ -431,7 +428,7 @@ class DownloadMethods(UserMethods):
 
         i = 1
         while True:
-            result = os.path.join(directory, '{} ({}){}'.format(name, i, ext))
+            result = os.path.join(directory, f'{name} ({i}){ext}')
             if not os.path.isfile(result):
                 return result
             i += 1

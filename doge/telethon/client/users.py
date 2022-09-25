@@ -56,13 +56,12 @@ class UserMethods(TelegramBaseClient):
                     request = request[request_index]
 
                 self._flood_waited_requests\
-                    [request.CONSTRUCTOR_ID] = time.time() + e.seconds
+                        [request.CONSTRUCTOR_ID] = time.time() + e.seconds
 
-                if e.seconds <= self.flood_sleep_threshold:
-                    __log__.info('Sleeping for %ds on flood wait', e.seconds)
-                    await asyncio.sleep(e.seconds, loop=self._loop)
-                else:
+                if e.seconds > self.flood_sleep_threshold:
                     raise
+                __log__.info('Sleeping for %ds on flood wait', e.seconds)
+                await asyncio.sleep(e.seconds, loop=self._loop)
             except (errors.PhoneMigrateError, errors.NetworkMigrateError,
                     errors.UserMigrateError) as e:
                 __log__.info('Phone migrated to %d', e.new_dc)
@@ -291,10 +290,7 @@ class UserMethods(TelegramBaseClient):
             return utils.get_input_peer(peer)
 
         raise ValueError(
-            'Could not find the input entity for "{}". Please read https://'
-            'telethon.readthedocs.io/en/latest/extra/basic/entities.html to'
-            ' find out more details.'
-            .format(peer)
+            f'Could not find the input entity for "{peer}". Please read https://telethon.readthedocs.io/en/latest/extra/basic/entities.html to find out more details.'
         )
 
     async def get_peer_id(self, peer, add_mark=True):
@@ -339,8 +335,7 @@ class UserMethods(TelegramBaseClient):
 
         Returns the found entity, or raises TypeError if not found.
         """
-        phone = utils.parse_phone(string)
-        if phone:
+        if phone := utils.parse_phone(string):
             for user in (await self(
                     functions.contacts.GetContactsRequest(0))).users:
                 if user.phone == phone:
@@ -366,12 +361,11 @@ class UserMethods(TelegramBaseClient):
                     result = await self(
                         functions.contacts.ResolveUsernameRequest(username))
                 except errors.UsernameNotOccupiedError as e:
-                    raise ValueError('No user has "{}" as username'
-                                     .format(username)) from e
+                    raise ValueError(f'No user has "{username}" as username') from e
 
                 for entity in itertools.chain(result.users, result.chats):
                     if getattr(entity, 'username', None) or '' \
-                            .lower() == username:
+                                .lower() == username:
                         return entity
             try:
                 # Nobody with this username, maybe it's an exact name/title
@@ -380,9 +374,7 @@ class UserMethods(TelegramBaseClient):
             except ValueError:
                 pass
 
-        raise ValueError(
-            'Cannot find any entity corresponding to "{}"'.format(string)
-        )
+        raise ValueError(f'Cannot find any entity corresponding to "{string}"')
 
     async def _get_input_notify(self, notify):
         """

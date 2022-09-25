@@ -105,10 +105,7 @@ class GetDifferenceRequest(TLRequest):
         flags = reader.read_int()
 
         _pts = reader.read_int()
-        if flags & 1:
-            _pts_total_limit = reader.read_int()
-        else:
-            _pts_total_limit = None
+        _pts_total_limit = reader.read_int() if flags & 1 else None
         _date = reader.tgread_date()
         _qts = reader.read_int()
         return cls(pts=_pts, date=_date, qts=_qts, pts_total_limit=_pts_total_limit)

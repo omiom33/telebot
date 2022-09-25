@@ -138,17 +138,15 @@ class MessageMethods(UploadMethods, ButtonMethods, MessageParseMethods):
         # and simply stopping once we hit a message with ID <= min_id.
         if reverse:
             offset_id = max(offset_id, min_id)
-            if offset_id and max_id:
-                if max_id - offset_id <= 1:
-                    return
+            if offset_id and max_id and max_id - offset_id <= 1:
+                return
 
             if not max_id:
                 max_id = float('inf')
         else:
             offset_id = max(offset_id, max_id)
-            if offset_id and min_id:
-                if offset_id - min_id <= 1:
-                    return
+            if offset_id and min_id and offset_id - min_id <= 1:
+                return
 
         if reverse:
             if offset_id:
@@ -246,9 +244,8 @@ class MessageMethods(UploadMethods, ButtonMethods, MessageParseMethods):
                 if reverse:
                     if message.id <= last_id or message.id >= max_id:
                         return
-                else:
-                    if message.id >= last_id or message.id <= min_id:
-                        return
+                elif message.id >= last_id or message.id <= min_id:
+                    return
 
                 # There has been reports that on bad connections this method
                 # was returning duplicated IDs sometimes. Using ``last_id``
@@ -263,14 +260,11 @@ class MessageMethods(UploadMethods, ButtonMethods, MessageParseMethods):
             if len(r.messages) < request.limit:
                 break
 
-            # Find the first message that's not empty (in some rare cases
-            # it can happen that the last message is :tl:`MessageEmpty`)
-            last_message = None
             messages = r.messages if reverse else reversed(r.messages)
-            for m in messages:
-                if not isinstance(m, types.MessageEmpty):
-                    last_message = m
-                    break
+            last_message = next(
+                (m for m in messages if not isinstance(m, types.MessageEmpty)),
+                None,
+            )
 
             if last_message is None:
                 # There are some cases where all the messages we get start
@@ -280,16 +274,15 @@ class MessageMethods(UploadMethods, ButtonMethods, MessageParseMethods):
                 # only "empty", not their contents. If this is the case we
                 # should just give up since there won't be any new Message.
                 break
+            request.offset_id = last_message.id
+            if isinstance(request, functions.messages.GetHistoryRequest):
+                request.offset_date = last_message.date
             else:
-                request.offset_id = last_message.id
-                if isinstance(request, functions.messages.GetHistoryRequest):
-                    request.offset_date = last_message.date
-                else:
-                    request.max_date = last_message.date
+                request.max_date = last_message.date
 
-                if reverse:
-                    # We want to skip the one we already have
-                    request.add_offset -= 1
+            if reverse:
+                # We want to skip the one we already have
+                request.add_offset -= 1
 
             await asyncio.sleep(
                 max(wait_time - (time.time() - start), 0), loop=self._loop)
@@ -314,11 +307,7 @@ class MessageMethods(UploadMethods, ButtonMethods, MessageParseMethods):
         total = [0]
         kwargs['_total'] = total
         if len(args) == 1 and 'limit' not in kwargs:
-            if 'min_id' in kwargs and 'max_id' in kwargs:
-                kwargs['limit'] = None
-            else:
-                kwargs['limit'] = 1
-
+            kwargs['limit'] = None if 'min_id' in kwargs and 'max_id' in kwargs else 1
         msgs = UserList()
         async for x in self.iter_messages(*args, **kwargs):
             msgs.append(x)

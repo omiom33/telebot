@@ -82,22 +82,10 @@ class PaymentForm(TLObject):
         _invoice = reader.tgread_object()
         _provider_id = reader.read_int()
         _url = reader.tgread_string()
-        if flags & 16:
-            _native_provider = reader.tgread_string()
-        else:
-            _native_provider = None
-        if flags & 16:
-            _native_params = reader.tgread_object()
-        else:
-            _native_params = None
-        if flags & 1:
-            _saved_info = reader.tgread_object()
-        else:
-            _saved_info = None
-        if flags & 2:
-            _saved_credentials = reader.tgread_object()
-        else:
-            _saved_credentials = None
+        _native_provider = reader.tgread_string() if flags & 16 else None
+        _native_params = reader.tgread_object() if flags & 16 else None
+        _saved_info = reader.tgread_object() if flags & 1 else None
+        _saved_credentials = reader.tgread_object() if flags & 2 else None
         reader.read_int()
         _users = []
         for _ in range(reader.read_int()):
@@ -176,14 +164,8 @@ class PaymentReceipt(TLObject):
         _bot_id = reader.read_int()
         _invoice = reader.tgread_object()
         _provider_id = reader.read_int()
-        if flags & 1:
-            _info = reader.tgread_object()
-        else:
-            _info = None
-        if flags & 2:
-            _shipping = reader.tgread_object()
-        else:
-            _shipping = None
+        _info = reader.tgread_object() if flags & 1 else None
+        _shipping = reader.tgread_object() if flags & 2 else None
         _currency = reader.tgread_string()
         _total_amount = reader.read_long()
         _credentials_title = reader.tgread_string()
@@ -289,10 +271,7 @@ class SavedInfo(TLObject):
         flags = reader.read_int()
 
         _has_saved_credentials = bool(flags & 2)
-        if flags & 1:
-            _saved_info = reader.tgread_object()
-        else:
-            _saved_info = None
+        _saved_info = reader.tgread_object() if flags & 1 else None
         return cls(has_saved_credentials=_has_saved_credentials, saved_info=_saved_info)
 
 
@@ -329,10 +308,7 @@ class ValidatedRequestedInfo(TLObject):
     def from_reader(cls, reader):
         flags = reader.read_int()
 
-        if flags & 1:
-            _id = reader.tgread_string()
-        else:
-            _id = None
+        _id = reader.tgread_string() if flags & 1 else None
         if flags & 2:
             reader.read_int()
             _shipping_options = []

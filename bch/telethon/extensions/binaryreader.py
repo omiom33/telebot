@@ -65,9 +65,9 @@ class BinaryReader:
         result = self.reader.read(length)
         if len(result) != length:
             raise BufferError(
-                'No more data left to read (need {}, got {}: {}); last read {}'
-                .format(length, len(result), repr(result), repr(self._last))
+                f'No more data left to read (need {length}, got {len(result)}: {repr(result)}); last read {repr(self._last)}'
             )
+
 
         self._last = result
         return result
@@ -113,17 +113,14 @@ class BinaryReader:
         elif value == 0xbc799737:  # boolFalse
             return False
         else:
-            raise RuntimeError('Invalid boolean code {}'.format(hex(value)))
+            raise RuntimeError(f'Invalid boolean code {hex(value)}')
 
     def tgread_date(self):
         """Reads and converts Unix time (used by Telegram)
            into a Python datetime object.
         """
         value = self.read_int()
-        if value == 0:
-            return None
-        else:
-            return datetime.fromtimestamp(value, tz=timezone.utc)
+        return None if value == 0 else datetime.fromtimestamp(value, tz=timezone.utc)
 
     def tgread_object(self):
         """Reads a Telegram object."""
@@ -141,19 +138,19 @@ class BinaryReader:
                 return [self.tgread_object() for _ in range(self.read_int())]
 
             clazz = core_objects.get(constructor_id, None)
-            if clazz is None:
-                # If there was still no luck, give up
-                self.seek(-4)  # Go back
-                pos = self.tell_position()
-                error = TypeNotFoundError(constructor_id, self.read())
-                self.set_position(pos)
-                raise error
+        if clazz is None:
+            # If there was still no luck, give up
+            self.seek(-4)  # Go back
+            pos = self.tell_position()
+            error = TypeNotFoundError(constructor_id, self.read())
+            self.set_position(pos)
+            raise error
 
         return clazz.from_reader(self)
 
     def tgread_vector(self):
         """Reads a vector (a list) of Telegram objects."""
-        if 0x1cb5c415 != self.read_int(signed=False):
+        if self.read_int(signed=False) != 0x1CB5C415:
             raise RuntimeError('Invalid constructor code, vector was expected')
 
         count = self.read_int()

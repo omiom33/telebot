@@ -542,18 +542,9 @@ class EditInlineBotMessageRequest(TLRequest):
         _no_webpage = bool(flags & 2)
         _stop_geo_live = bool(flags & 4096)
         _id = reader.tgread_object()
-        if flags & 2048:
-            _message = reader.tgread_string()
-        else:
-            _message = None
-        if flags & 16384:
-            _media = reader.tgread_object()
-        else:
-            _media = None
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _message = reader.tgread_string() if flags & 2048 else None
+        _media = reader.tgread_object() if flags & 16384 else None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         if flags & 8:
             reader.read_int()
             _entities = []
@@ -563,10 +554,7 @@ class EditInlineBotMessageRequest(TLRequest):
 
         else:
             _entities = None
-        if flags & 8192:
-            _geo_point = reader.tgread_object()
-        else:
-            _geo_point = None
+        _geo_point = reader.tgread_object() if flags & 8192 else None
         return cls(id=_id, no_webpage=_no_webpage, stop_geo_live=_stop_geo_live, message=_message, media=_media, reply_markup=_reply_markup, entities=_entities, geo_point=_geo_point)
 
 
@@ -638,18 +626,9 @@ class EditMessageRequest(TLRequest):
         _stop_geo_live = bool(flags & 4096)
         _peer = reader.tgread_object()
         _id = reader.read_int()
-        if flags & 2048:
-            _message = reader.tgread_string()
-        else:
-            _message = None
-        if flags & 16384:
-            _media = reader.tgread_object()
-        else:
-            _media = None
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _message = reader.tgread_string() if flags & 2048 else None
+        _media = reader.tgread_object() if flags & 16384 else None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         if flags & 8:
             reader.read_int()
             _entities = []
@@ -659,10 +638,7 @@ class EditMessageRequest(TLRequest):
 
         else:
             _entities = None
-        if flags & 8192:
-            _geo_point = reader.tgread_object()
-        else:
-            _geo_point = None
+        _geo_point = reader.tgread_object() if flags & 8192 else None
         return cls(peer=_peer, id=_id, no_webpage=_no_webpage, stop_geo_live=_stop_geo_live, message=_message, media=_media, reply_markup=_reply_markup, entities=_entities, geo_point=_geo_point)
 
 
@@ -1014,10 +990,7 @@ class GetBotCallbackAnswerRequest(TLRequest):
         _game = bool(flags & 2)
         _peer = reader.tgread_object()
         _msg_id = reader.read_int()
-        if flags & 1:
-            _data = reader.tgread_bytes()
-        else:
-            _data = None
+        _data = reader.tgread_bytes() if flags & 1 else None
         return cls(peer=_peer, msg_id=_msg_id, game=_game, data=_data)
 
 
@@ -1509,10 +1482,7 @@ class GetInlineBotResultsRequest(TLRequest):
 
         _bot = reader.tgread_object()
         _peer = reader.tgread_object()
-        if flags & 1:
-            _geo_point = reader.tgread_object()
-        else:
-            _geo_point = None
+        _geo_point = reader.tgread_object() if flags & 1 else None
         _query = reader.tgread_string()
         _offset = reader.tgread_string()
         return cls(bot=_bot, peer=_peer, query=_query, offset=_offset, geo_point=_geo_point)
@@ -1637,10 +1607,7 @@ class GetMessagesRequest(TLRequest):
         self.id = id  # type: List[TypeInputMessage]
 
     async def resolve(self, client, utils):
-        _tmp = []
-        for _x in self.id:
-            _tmp.append(utils.get_input_message(_x))
-
+        _tmp = [utils.get_input_message(_x) for _x in self.id]
         self.id = _tmp
 
     def to_dict(self):
@@ -2851,10 +2818,7 @@ class SaveDraftRequest(TLRequest):
         flags = reader.read_int()
 
         _no_webpage = bool(flags & 2)
-        if flags & 1:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _reply_to_msg_id = reader.read_int() if flags & 1 else None
         _peer = reader.tgread_object()
         _message = reader.tgread_string()
         if flags & 8:
@@ -3026,10 +2990,7 @@ class SearchRequest(TLRequest):
 
         _peer = reader.tgread_object()
         _q = reader.tgread_string()
-        if flags & 1:
-            _from_id = reader.tgread_object()
-        else:
-            _from_id = None
+        _from_id = reader.tgread_object() if flags & 1 else None
         _filter = reader.tgread_object()
         _min_date = reader.tgread_date()
         _max_date = reader.tgread_date()
@@ -3358,10 +3319,7 @@ class SendInlineBotResultRequest(TLRequest):
         _background = bool(flags & 64)
         _clear_draft = bool(flags & 128)
         _peer = reader.tgread_object()
-        if flags & 1:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _reply_to_msg_id = reader.read_int() if flags & 1 else None
         _random_id = reader.read_long()
         _query_id = reader.read_long()
         _id = reader.tgread_string()
@@ -3438,17 +3396,11 @@ class SendMediaRequest(TLRequest):
         _background = bool(flags & 64)
         _clear_draft = bool(flags & 128)
         _peer = reader.tgread_object()
-        if flags & 1:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _reply_to_msg_id = reader.read_int() if flags & 1 else None
         _media = reader.tgread_object()
         _message = reader.tgread_string()
         _random_id = reader.read_long()
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         if flags & 8:
             reader.read_int()
             _entities = []
@@ -3530,16 +3482,10 @@ class SendMessageRequest(TLRequest):
         _background = bool(flags & 64)
         _clear_draft = bool(flags & 128)
         _peer = reader.tgread_object()
-        if flags & 1:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _reply_to_msg_id = reader.read_int() if flags & 1 else None
         _message = reader.tgread_string()
         _random_id = reader.read_long()
-        if flags & 4:
-            _reply_markup = reader.tgread_object()
-        else:
-            _reply_markup = None
+        _reply_markup = reader.tgread_object() if flags & 4 else None
         if flags & 8:
             reader.read_int()
             _entities = []
@@ -3605,10 +3551,7 @@ class SendMultiMediaRequest(TLRequest):
         _background = bool(flags & 64)
         _clear_draft = bool(flags & 128)
         _peer = reader.tgread_object()
-        if flags & 1:
-            _reply_to_msg_id = reader.read_int()
-        else:
-            _reply_to_msg_id = None
+        _reply_to_msg_id = reader.read_int() if flags & 1 else None
         reader.read_int()
         _multi_media = []
         for _ in range(reader.read_int()):
@@ -3707,14 +3650,8 @@ class SetBotCallbackAnswerRequest(TLRequest):
 
         _alert = bool(flags & 2)
         _query_id = reader.read_long()
-        if flags & 1:
-            _message = reader.tgread_string()
-        else:
-            _message = None
-        if flags & 4:
-            _url = reader.tgread_string()
-        else:
-            _url = None
+        _message = reader.tgread_string() if flags & 1 else None
+        _url = reader.tgread_string() if flags & 4 else None
         _cache_time = reader.read_int()
         return cls(query_id=_query_id, cache_time=_cache_time, alert=_alert, message=_message, url=_url)
 
@@ -3757,10 +3694,7 @@ class SetBotPrecheckoutResultsRequest(TLRequest):
 
         _success = bool(flags & 2)
         _query_id = reader.read_long()
-        if flags & 1:
-            _error = reader.tgread_string()
-        else:
-            _error = None
+        _error = reader.tgread_string() if flags & 1 else None
         return cls(query_id=_query_id, success=_success, error=_error)
 
 
@@ -3802,10 +3736,7 @@ class SetBotShippingResultsRequest(TLRequest):
         flags = reader.read_int()
 
         _query_id = reader.read_long()
-        if flags & 1:
-            _error = reader.tgread_string()
-        else:
-            _error = None
+        _error = reader.tgread_string() if flags & 1 else None
         if flags & 2:
             reader.read_int()
             _shipping_options = []
@@ -3974,14 +3905,8 @@ class SetInlineBotResultsRequest(TLRequest):
             _results.append(_x)
 
         _cache_time = reader.read_int()
-        if flags & 4:
-            _next_offset = reader.tgread_string()
-        else:
-            _next_offset = None
-        if flags & 8:
-            _switch_pm = reader.tgread_object()
-        else:
-            _switch_pm = None
+        _next_offset = reader.tgread_string() if flags & 4 else None
+        _switch_pm = reader.tgread_object() if flags & 8 else None
         return cls(query_id=_query_id, results=_results, cache_time=_cache_time, gallery=_gallery, private=_private, next_offset=_next_offset, switch_pm=_switch_pm)
 
 

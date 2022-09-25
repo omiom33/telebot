@@ -56,8 +56,7 @@ class SQLiteSession(MemorySession):
 
             # These values will be saved
             c.execute('select * from sessions')
-            tuple_ = c.fetchone()
-            if tuple_:
+            if tuple_ := c.fetchone():
                 self._dc_id, self._server_address, self._port, key, = tuple_
                 self._auth_key = AuthKey(data=key)
 
@@ -117,27 +116,29 @@ class SQLiteSession(MemorySession):
         return cloned
 
     def _check_migrate_json(self):
-        if file_exists(self.filename):
-            try:
-                with open(self.filename, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                self.delete()  # Delete JSON file to create database
+        if not file_exists(self.filename):
+            return
+        try:
+            with open(self.filename, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            self.delete()  # Delete JSON file to create database
 
-                self._port = data.get('port', self._port)
-                self._server_address = \
+            self._port = data.get('port', self._port)
+            self._server_address = \
                     data.get('server_address', self._server_address)
 
-                if data.get('auth_key_data', None) is not None:
-                    key = b64decode(data['auth_key_data'])
-                    self._auth_key = AuthKey(data=key)
+            if data.get('auth_key_data', None) is not None:
+                key = b64decode(data['auth_key_data'])
+                self._auth_key = AuthKey(data=key)
 
-                rows = []
-                for p_id, p_hash in data.get('entities', []):
-                    if p_hash is not None:
-                        rows.append((p_id, p_hash, None, None, None))
-                return rows
-            except UnicodeDecodeError:
-                return []  # No entities
+            return [
+                (p_id, p_hash, None, None, None)
+                for p_id, p_hash in data.get('entities', [])
+                if p_hash is not None
+            ]
+
+        except UnicodeDecodeError:
+            return []  # No entities
 
     def _upgrade_database(self, old):
         c = self._cursor()
@@ -170,7 +171,7 @@ class SQLiteSession(MemorySession):
     @staticmethod
     def _create_table(c, *definitions):
         for definition in definitions:
-            c.execute('create table {}'.format(definition))
+            c.execute(f'create table {definition}')
 
     # Data from sessions should be kept as properties
     # not to fetch the database every time we need it
@@ -180,10 +181,7 @@ class SQLiteSession(MemorySession):
 
         # Fetch the auth_key corresponding to this data center
         row = self._execute('select auth_key from sessions')
-        if row and row[0]:
-            self._auth_key = AuthKey(data=row[0])
-        else:
-            self._auth_key = None
+        self._auth_key = AuthKey(data=row[0]) if row and row[0] else None
 
     @MemorySession.auth_key.setter
     def auth_key(self, value):
@@ -207,9 +205,10 @@ class SQLiteSession(MemorySession):
         c.close()
 
     def get_update_state(self, entity_id):
-        row = self._execute('select pts, qts, date, seq from update_state '
-                            'where id = ?', entity_id)
-        if row:
+        if row := self._execute(
+            'select pts, qts, date, seq from update_state ' 'where id = ?',
+            entity_id,
+        ):
             pts, qts, date, seq = row
             date = datetime.datetime.fromtimestamp(
                 date, tz=datetime.timezone.utc)
@@ -246,11 +245,10 @@ class SQLiteSession(MemorySession):
 
     def close(self):
         """Closes the connection unless we're working in-memory"""
-        if self.filename != ':memory:':
-            if self._conn is not None:
-                self._conn.commit()
-                self._conn.close()
-                self._conn = None
+        if self.filename != ':memory:' and self._conn is not None:
+            self._conn.commit()
+            self._conn.close()
+            self._conn = None
 
     def delete(self):
         """Deletes the current session file"""
@@ -319,18 +317,19 @@ class SQLiteSession(MemorySession):
     # File processing
 
     def get_file(self, md5_digest, file_size, cls):
-        row = self._execute(
+        if row := self._execute(
             'select id, hash from sent_files '
             'where md5_digest = ? and file_size = ? and type = ?',
-            md5_digest, file_size, _SentFileType.from_type(cls).value
-        )
-        if row:
+            md5_digest,
+            file_size,
+            _SentFileType.from_type(cls).value,
+        ):
             # Both allowed classes have (id, access_hash) as parameters
             return cls(row[0], row[1])
 
     def cache_file(self, md5_digest, file_size, instance):
         if not isinstance(instance, (InputDocument, InputPhoto)):
-            raise TypeError('Cannot cache %s instance' % type(instance))
+            raise TypeError(f'Cannot cache {type(instance)} instance')
 
         self._execute(
             'insert or replace into sent_files values (?,?,?,?,?)',

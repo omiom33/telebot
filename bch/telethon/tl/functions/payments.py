@@ -165,14 +165,8 @@ class SendPaymentFormRequest(TLRequest):
         flags = reader.read_int()
 
         _msg_id = reader.read_int()
-        if flags & 1:
-            _requested_info_id = reader.tgread_string()
-        else:
-            _requested_info_id = None
-        if flags & 2:
-            _shipping_option_id = reader.tgread_string()
-        else:
-            _shipping_option_id = None
+        _requested_info_id = reader.tgread_string() if flags & 1 else None
+        _shipping_option_id = reader.tgread_string() if flags & 2 else None
         _credentials = reader.tgread_object()
         return cls(msg_id=_msg_id, credentials=_credentials, requested_info_id=_requested_info_id, shipping_option_id=_shipping_option_id)
 

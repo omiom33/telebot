@@ -63,10 +63,7 @@ class ChannelDifference(TLObject):
 
         _final = bool(flags & 1)
         _pts = reader.read_int()
-        if flags & 2:
-            _timeout = reader.read_int()
-        else:
-            _timeout = None
+        _timeout = reader.read_int() if flags & 2 else None
         reader.read_int()
         _new_messages = []
         for _ in range(reader.read_int()):
@@ -132,10 +129,7 @@ class ChannelDifferenceEmpty(TLObject):
 
         _final = bool(flags & 1)
         _pts = reader.read_int()
-        if flags & 2:
-            _timeout = reader.read_int()
-        else:
-            _timeout = None
+        _timeout = reader.read_int() if flags & 2 else None
         return cls(pts=_pts, final=_final, timeout=_timeout)
 
 
@@ -209,10 +203,7 @@ class ChannelDifferenceTooLong(TLObject):
 
         _final = bool(flags & 1)
         _pts = reader.read_int()
-        if flags & 2:
-            _timeout = reader.read_int()
-        else:
-            _timeout = None
+        _timeout = reader.read_int() if flags & 2 else None
         _top_message = reader.read_int()
         _read_inbox_max_id = reader.read_int()
         _read_outbox_max_id = reader.read_int()

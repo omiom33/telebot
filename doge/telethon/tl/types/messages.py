@@ -232,14 +232,8 @@ class BotCallbackAnswer(TLObject):
         _alert = bool(flags & 2)
         _has_url = bool(flags & 8)
         _native_ui = bool(flags & 16)
-        if flags & 1:
-            _message = reader.tgread_string()
-        else:
-            _message = None
-        if flags & 4:
-            _url = reader.tgread_string()
-        else:
-            _url = None
+        _message = reader.tgread_string() if flags & 1 else None
+        _url = reader.tgread_string() if flags & 4 else None
         _cache_time = reader.read_int()
         return cls(cache_time=_cache_time, alert=_alert, has_url=_has_url, native_ui=_native_ui, message=_message, url=_url)
 
@@ -298,14 +292,8 @@ class BotResults(TLObject):
 
         _gallery = bool(flags & 1)
         _query_id = reader.read_long()
-        if flags & 2:
-            _next_offset = reader.tgread_string()
-        else:
-            _next_offset = None
-        if flags & 4:
-            _switch_pm = reader.tgread_object()
-        else:
-            _switch_pm = None
+        _next_offset = reader.tgread_string() if flags & 2 else None
+        _switch_pm = reader.tgread_object() if flags & 4 else None
         reader.read_int()
         _results = []
         for _ in range(reader.read_int()):

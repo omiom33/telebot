@@ -177,10 +177,7 @@ class InitConnectionRequest(TLRequest):
         _system_lang_code = reader.tgread_string()
         _lang_pack = reader.tgread_string()
         _lang_code = reader.tgread_string()
-        if flags & 1:
-            _proxy = reader.tgread_object()
-        else:
-            _proxy = None
+        _proxy = reader.tgread_object() if flags & 1 else None
         _query = reader.tgread_object()
         return cls(api_id=_api_id, device_model=_device_model, system_version=_system_version, app_version=_app_version, system_lang_code=_system_lang_code, lang_pack=_lang_pack, lang_code=_lang_code, query=_query, proxy=_proxy)
 

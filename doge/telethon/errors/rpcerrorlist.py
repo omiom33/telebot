@@ -8,19 +8,25 @@ class RPCErrorNeg503(RPCError):
 class FloodTestPhoneWaitError(FloodError):
     def __init__(self, **kwargs):
         self.seconds = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('A wait of {} seconds is required in the test servers'.format(self.seconds))
+        super(Exception, self).__init__(
+            f'A wait of {self.seconds} seconds is required in the test servers'
+        )
 
 
 class FloodWaitError(FloodError):
     def __init__(self, **kwargs):
         self.seconds = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('A wait of {} seconds is required'.format(self.seconds))
+        super(Exception, self).__init__(
+            f'A wait of {self.seconds} seconds is required'
+        )
 
 
 class TakeoutInitDelayError(FloodError):
     def __init__(self, **kwargs):
         self.seconds = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('A wait of {} seconds is required before being able to initiate the takeout'.format(self.seconds))
+        super(Exception, self).__init__(
+            f'A wait of {self.seconds} seconds is required before being able to initiate the takeout'
+        )
 
 
 class ActiveUserRequiredError(UnauthorizedError):
@@ -66,25 +72,33 @@ class UserDeactivatedError(UnauthorizedError):
 class FileMigrateError(InvalidDCError):
     def __init__(self, **kwargs):
         self.new_dc = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('The file to be accessed is currently stored in DC {}'.format(self.new_dc))
+        super(Exception, self).__init__(
+            f'The file to be accessed is currently stored in DC {self.new_dc}'
+        )
 
 
 class NetworkMigrateError(InvalidDCError):
     def __init__(self, **kwargs):
         self.new_dc = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('The source IP address is associated with DC {}'.format(self.new_dc))
+        super(Exception, self).__init__(
+            f'The source IP address is associated with DC {self.new_dc}'
+        )
 
 
 class PhoneMigrateError(InvalidDCError):
     def __init__(self, **kwargs):
         self.new_dc = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('The phone number a user is trying to use for authorization is associated with DC {}'.format(self.new_dc))
+        super(Exception, self).__init__(
+            f'The phone number a user is trying to use for authorization is associated with DC {self.new_dc}'
+        )
 
 
 class UserMigrateError(InvalidDCError):
     def __init__(self, **kwargs):
         self.new_dc = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('The user whose identity is being used to execute queries is associated with DC {}'.format(self.new_dc))
+        super(Exception, self).__init__(
+            f'The user whose identity is being used to execute queries is associated with DC {self.new_dc}'
+        )
 
 
 class TimeoutError(RPCErrorNeg503):
@@ -430,7 +444,9 @@ class FilePartSizeInvalidError(BadRequestError):
 class FilePartMissingError(BadRequestError):
     def __init__(self, **kwargs):
         self.which = int(kwargs.get('capture', 0))
-        super(Exception, self).__init__('Part {} of the file is missing from storage'.format(self.which))
+        super(Exception, self).__init__(
+            f'Part {self.which} of the file is missing from storage'
+        )
 
 
 class FirstNameInvalidError(BadRequestError):

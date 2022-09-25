@@ -432,10 +432,7 @@ class SendCodeRequest(TLRequest):
 
         _allow_flashcall = bool(flags & 1)
         _phone_number = reader.tgread_string()
-        if flags & 1:
-            _current_number = reader.tgread_bool()
-        else:
-            _current_number = None
+        _current_number = reader.tgread_bool() if flags & 1 else None
         _api_id = reader.read_int()
         _api_hash = reader.tgread_string()
         return cls(phone_number=_phone_number, api_id=_api_id, api_hash=_api_hash, allow_flashcall=_allow_flashcall, current_number=_current_number)

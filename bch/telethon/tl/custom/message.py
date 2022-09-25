@@ -354,9 +354,10 @@ class Message(ChatGetter, SenderGetter, TLObject, abc.ABC):
         If the message media is a document,
         this returns the :tl:`Document` object.
         """
-        if isinstance(self.media, types.MessageMediaDocument):
-            if isinstance(self.media.document, types.Document):
-                return self.media.document
+        if isinstance(self.media, types.MessageMediaDocument) and isinstance(
+            self.media.document, types.Document
+        ):
+            return self.media.document
 
     @property
     def audio(self):
@@ -674,13 +675,12 @@ class Message(ChatGetter, SenderGetter, TLObject, abc.ABC):
         for row in self.reply_markup.rows:
             for button in row.buttons:
                 if isinstance(button, types.KeyboardButtonSwitchInline):
-                    if button.same_peer:
-                        bot = self.input_sender
-                        if not bot:
-                            raise ValueError('No input sender')
-                    else:
+                    if not button.same_peer:
                         return self._client.session.get_input_entity(
                             self.via_bot_id)
+                    bot = self.input_sender
+                    if not bot:
+                        raise ValueError('No input sender')
 
     def _document_by_attribute(self, kind, condition=None):
         """
@@ -688,8 +688,9 @@ class Message(ChatGetter, SenderGetter, TLObject, abc.ABC):
         that's an instance of the given kind, and passes the condition.
         """
         for attr in self.document.attributes:
-            if isinstance(attr, kind):
-                if not condition or condition(self.document):
-                    return self.document
+            if isinstance(attr, kind) and (
+                not condition or condition(self.document)
+            ):
+                return self.document
 
     # endregion Private Methods

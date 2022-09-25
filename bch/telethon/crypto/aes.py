@@ -36,7 +36,7 @@ class AES:
         for block_index in range(blocks_count):
             for i in range(16):
                 cipher_text_block[i] = \
-                    cipher_text[block_index * 16 + i] ^ iv2[i]
+                        cipher_text[block_index * 16 + i] ^ iv2[i]
 
             plain_text_block = aes.decrypt(cipher_text_block)
 

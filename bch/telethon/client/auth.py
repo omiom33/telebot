@@ -166,9 +166,9 @@ class AuthMethods(MessageParseMethods, UserMethods):
             attempts += 1
         else:
             raise RuntimeError(
-                '{} consecutive sign-in attempts failed. Aborting'
-                .format(max_attempts)
+                f'{max_attempts} consecutive sign-in attempts failed. Aborting'
             )
+
 
         if two_step_detected:
             if not password:
@@ -237,7 +237,7 @@ class AuthMethods(MessageParseMethods, UserMethods):
         elif code:
             phone = utils.parse_phone(phone) or self._phone
             phone_code_hash = \
-                phone_code_hash or self._phone_code_hash.get(phone, None)
+                    phone_code_hash or self._phone_code_hash.get(phone, None)
 
             if not phone:
                 raise ValueError(
@@ -305,7 +305,7 @@ class AuthMethods(MessageParseMethods, UserMethods):
                 t = self.parse_mode.unparse(self._tos.text, self._tos.entities)
             else:
                 t = self._tos.text
-            sys.stderr.write("{}\n".format(t))
+            sys.stderr.write(f"{t}\n")
             sys.stderr.flush()
 
         result = await self(functions.auth.SignUpRequest(
@@ -435,20 +435,7 @@ class AuthMethods(MessageParseMethods, UserMethods):
             )
             current_password_hash = hashlib.sha256(current_password).digest()
 
-        if new_password:  # Setting new password
-            new_password = salt + new_password.encode('utf-8') + salt
-            new_password_hash = hashlib.sha256(new_password).digest()
-            new_settings = types.account.PasswordInputSettings(
-                new_salt=salt,
-                new_password_hash=new_password_hash,
-                hint=hint
-            )
-            if email:  # If enabling 2FA or changing email
-                new_settings.email = email  # TG counts empty string as None
-            return await self(functions.account.UpdatePasswordSettingsRequest(
-                current_password_hash, new_settings=new_settings
-            ))
-        else:  # Removing existing password
+        if not new_password:
             return await self(functions.account.UpdatePasswordSettingsRequest(
                 current_password_hash,
                 new_settings=types.account.PasswordInputSettings(
@@ -457,6 +444,18 @@ class AuthMethods(MessageParseMethods, UserMethods):
                     hint=hint
                 )
             ))
+        new_password = salt + new_password.encode('utf-8') + salt
+        new_password_hash = hashlib.sha256(new_password).digest()
+        new_settings = types.account.PasswordInputSettings(
+            new_salt=salt,
+            new_password_hash=new_password_hash,
+            hint=hint
+        )
+        if email:  # If enabling 2FA or changing email
+            new_settings.email = email  # TG counts empty string as None
+        return await self(functions.account.UpdatePasswordSettingsRequest(
+            current_password_hash, new_settings=new_settings
+        ))
 
     # endregion
 

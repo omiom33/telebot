@@ -57,10 +57,7 @@ def parse(message, delimiters=None, url_re=None):
     message = add_surrogate(message)
     while i < len(message):
         if url_re and current is None:
-            # If we're not inside a previous match since Telegram doesn't allow
-            # nested message entities, try matching the URL from the i'th pos.
-            url_match = url_re.match(message, pos=i)
-            if url_match:
+            if url_match := url_re.match(message, pos=i):
                 # Replace the whole match with only the inline URL text.
                 message = ''.join((
                     message[:url_match.start()],
@@ -93,12 +90,7 @@ def parse(message, delimiters=None, url_re=None):
 
                 # Get rid of the delimiter by slicing it away
                 message = message[:i] + message[i + len(d):]
-                if m == MessageEntityPre:
-                    # Special case, also has 'lang'
-                    current = m(i, None, '')
-                else:
-                    current = m(i, None)
-
+                current = m(i, None, '') if m == MessageEntityPre else m(i, None)
                 end_delimiter = d  # We expect the same delimiter.
                 break
 
@@ -158,8 +150,7 @@ def unparse(text, entities, delimiters=None, url_fmt=None):
     for entity in entities:
         s = entity.offset
         e = entity.offset + entity.length
-        delimiter = delimiters.get(type(entity), None)
-        if delimiter:
+        if delimiter := delimiters.get(type(entity), None):
             text = text[:s] + delimiter + text[s:e] + delimiter + text[e:]
         elif isinstance(entity, MessageEntityTextUrl) and url_fmt:
             text = (

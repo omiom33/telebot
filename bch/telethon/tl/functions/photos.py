@@ -21,10 +21,7 @@ class DeletePhotosRequest(TLRequest):
         self.id = id  # type: List[TypeInputPhoto]
 
     async def resolve(self, client, utils):
-        _tmp = []
-        for _x in self.id:
-            _tmp.append(utils.get_input_photo(_x))
-
+        _tmp = [utils.get_input_photo(_x) for _x in self.id]
         self.id = _tmp
 
     def to_dict(self):

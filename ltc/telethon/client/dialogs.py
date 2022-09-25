@@ -106,7 +106,7 @@ class DialogMethods(UserMethods):
                         await yield_(cd)
 
             if len(r.dialogs) < req.limit\
-                    or not isinstance(r, types.messages.DialogsSlice):
+                        or not isinstance(r, types.messages.DialogsSlice):
                 # Less than we requested means we reached the end, or
                 # we didn't get a DialogsSlice which means we got all.
                 break

@@ -148,7 +148,7 @@ class EventCommon(ChatGetter, abc.ABC):
 def name_inner_event(cls):
     """Decorator to rename cls.Event 'Event' as 'cls.Event'"""
     if hasattr(cls, 'Event'):
-        cls.Event._event_name = '{}.Event'.format(cls.__name__)
+        cls.Event._event_name = f'{cls.__name__}.Event'
     else:
-        warnings.warn('Class {} does not have a inner Event'.format(cls))
+        warnings.warn(f'Class {cls} does not have a inner Event')
     return cls

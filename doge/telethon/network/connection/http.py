@@ -17,7 +17,7 @@ class ConnectionHttp(Connection):
         self._host = None
 
     async def connect(self, ip, port):
-        self._host = '{}:{}'.format(ip, port)
+        self._host = f'{ip}:{port}'
         try:
             await self.conn.connect(ip, port)
         except OSError as e:
@@ -52,11 +52,10 @@ class ConnectionHttp(Connection):
 
     async def send(self, message):
         await self.write(
-            'POST /api HTTP/1.1\r\n'
-            'Host: {}\r\n'
-            'Content-Type: application/x-www-form-urlencoded\r\n'
-            'Connection: keep-alive\r\n'
-            'Keep-Alive: timeout=100000, max=10000000\r\n'
-            'Content-Length: {}\r\n\r\n'.format(self._host, len(message))
-            .encode('ascii') + message
+            (
+                f'POST /api HTTP/1.1\r\nHost: {self._host}\r\nContent-Type: application/x-www-form-urlencoded\r\nConnection: keep-alive\r\nKeep-Alive: timeout=100000, max=10000000\r\nContent-Length: {len(message)}\r\n\r\n'.encode(
+                    'ascii'
+                )
+                + message
+            )
         )

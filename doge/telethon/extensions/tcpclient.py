@@ -60,7 +60,7 @@ class TcpClient:
         elif hasattr(timeout, 'seconds'):
             self.timeout = float(timeout.seconds)
         else:
-            raise TypeError('Invalid timeout type: {}'.format(type(timeout)))
+            raise TypeError(f'Invalid timeout type: {type(timeout)}')
 
     @staticmethod
     def _create_socket(mode, proxy):

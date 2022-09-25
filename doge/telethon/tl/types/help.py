@@ -444,10 +444,7 @@ class TermsOfService(TLObject):
             _x = reader.tgread_object()
             _entities.append(_x)
 
-        if flags & 2:
-            _min_age_confirm = reader.read_int()
-        else:
-            _min_age_confirm = None
+        _min_age_confirm = reader.read_int() if flags & 2 else None
         return cls(id=_id, text=_text, entities=_entities, popup=_popup, min_age_confirm=_min_age_confirm)
 
 
